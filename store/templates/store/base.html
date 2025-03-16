@@ -86,11 +86,18 @@
                     <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
 
                         <li>
-                            
-                            <a class="dropdown-item" href="{% url 'store' %}"> All </a>
-                        
-                        </li>
+                            <a class="dropdown-item" href="{% url 'store' %}"> All  </a>
+                        </li>    
                     
+                        {% for category in all_categories %}
+                        
+                            <li>
+                                
+                                <a class="dropdown-item" href="{{category.get_absolute_url}}"> {{ category.name | capfirst }} </a>
+                            
+                            </li>
+                        
+                        {% endfor %}
         
                     
                     </ul>
@@ -126,7 +133,7 @@
 
                 <li class="nav-item">
 
-                    <a type="button" role="button" href="/" class="btn btn-outline-secondary"> 
+                    <a type="button" role="button" href="{% url 'cart-summary' %}" class="btn btn-outline-secondary"> 
                     
 
 
