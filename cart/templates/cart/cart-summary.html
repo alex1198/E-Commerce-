@@ -1,11 +1,7 @@
 {% include "store/base.html" %}
-
-
 {% load static %}
-
-
+{% load mathfilters %}
 {% block content %}
-
 
 <main class="pt-5">
     
@@ -14,6 +10,10 @@
       <h1 class="h5"> Shopping cart </h1>
 
 	<hr>
+
+      {% for item in cart %}
+
+      {% with product=item.product %}
       
       <br>
 
@@ -21,16 +21,16 @@
         
         <div class="col-md-3 col-lg-2 order-md-first bg-light">
         
-            <img class="img-fluid mx-auto d-block" width="200px" alt="Responsive image" src=""> <!-- Product image -->
+            <img class="img-fluid mx-auto d-block" width="200px" alt="Responsive image" src="{{product.image.url}}"> <!-- Product image -->
         
         </div>
 
         
         <div class="col-md-9 col-lg-10 ps-md-3 ps-lg-10">
           
-          <a href="" class="text-decoration-none text-reset"> <!-- Product get absolute url -->
+          <a href="{{product.get_absolute_url}}" class="text-info text-decoration-none"> <!-- Product get absolute url -->
           
-            <h1 class="h5 pt-2"> <!-- Product title --> </h1>
+            <h1 class="h5 pt-2"> {{product.title}} <!-- Product title --> </h1>
           
           </a>
           
@@ -42,7 +42,7 @@
               
                 <div class="col-6"> Product </div>
               
-                <div class="col-6 text-end"><span class="h6 fw-bold">$ <!-- Product price --> </span></div>
+                <div class="col-6 text-end"><span class="h6 fw-bold">$ {{product.price|mul:item.qty}} </span></div>
             
               </div>
             
@@ -58,7 +58,7 @@
 
                   &nbsp; 
                   
-                  <select id="">
+                  <select id="select{{product.id}}">
                   
                     <option selected>
                   
@@ -78,7 +78,7 @@
                   
                   <br> <br>
 
-                  <button type="button" id="update-button"
+                  <button type="button" data-index="{{product.id}}"
                     class="btn btn-primary btn-sm update-button">
                     Update
                   
@@ -86,7 +86,7 @@
                   
                   &nbsp;
 
-                  <button type="button" id="delete-button"
+                  <button type="button"  data-index="{{product.id}}"
                     class="btn btn-danger btn-sm delete-button">
                     Delete
         
@@ -105,19 +105,94 @@
       
     </div>
       
+    {% endwith %}
 
+    {% endfor %}
 
       <div class="col-12 text-end">
  
-        <div class="h6 fw-bold"> Sub total: $ <div id="total" class="d-inline-flex"> <!-- cart.get_total --> </div></div>
+        <div class="h6 fw-bold"> Sub total: $ <div id="total" class="d-inline-flex"> {{cart.get_total}}<!-- cart.get_total --> </div></div>
  
       </div>
  
 
     </div>
-  
+<br>
+<br>
 
  </main>
+
+ <script>
+
+  
+  // Delete button
+
+  $(document).on('click', '.delete-button', function(e){
+      e.preventDefault();
+
+      $.ajax({
+
+          type: 'POST',
+          url: '{% url "cart-delete" %}',
+          data: {
+              product_id: $(this).data('index'), 
+              csrfmiddlewaretoken: '{{ csrf_token }}',
+              action: 'post'
+          },
+
+          success: function (json) {
+            
+
+            location.reload(true);
+            document.getElementById('cart-qty').textContent = json.qty; 
+            document.getElementById('total').textContent = json.total; 
+
+          },
+
+          error: function (xhr, errmsg, err) {
+              console.log(xhr.status + ": " + xhr.responseText);
+          }
+      });
+
+  })
+
+
+
+  // Update button
+
+  $(document).on('click', '.update-button', function(e){
+      e.preventDefault();
+
+      var theproductid = $(this).data('index');
+
+      $.ajax({
+
+          type: 'POST',
+          url: '{% url "cart-update" %}',
+          data: {
+              product_id: $(this).data('index'), 
+              product_quantity: $('#select' + theproductid + ' option:selected').text(),
+              csrfmiddlewaretoken: '{{ csrf_token }}',
+              action: 'post'
+          },
+
+          success: function (json) {
+            
+            location.reload(true);
+            document.getElementById('cart-qty').textContent = json.qty; 
+            document.getElementById('total').textContent = json.total; 
+
+          },
+
+          error: function (xhr, errmsg, err) {
+              console.log(xhr.status + ": " + xhr.responseText);
+          }
+      });
+
+  })
+
+
+</script>
 
 
 
